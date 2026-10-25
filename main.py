@@ -1,5 +1,6 @@
 import flet as ft
 import asyncio
+import os
 from datetime import datetime
 
 # Componente personalizado para cada bombero en la zona caliente
@@ -151,4 +152,6 @@ def main(page: ft.Page):
         ft.Row([panel_izquierdo, panel_derecho], expand=True, vertical_alignment=ft.CrossAxisAlignment.START)
     )
 
-ft.app(target=main)
+if __name__ == "__main__":
+    puerto = int(os.environ.get("PORT", 8080))
+    ft.app(target=main, view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=puerto)
