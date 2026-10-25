@@ -8,7 +8,7 @@ class BomberoActivo(ft.Container):
     def __init__(self, nombre, on_exit):
         super().__init__()
         self.nombre = nombre
-        self.on_exit = on_exit # Función para devolverlo a la lista de disponibles
+        self.on_exit = on_exit
         self.hora_entrada = datetime.now()
         self.ultima_revision = datetime.now()
         self.activo = True
@@ -41,16 +41,15 @@ class BomberoActivo(ft.Container):
         self.border_radius = 8
         self.bgcolor = ft.colors.BLUE_GREY_900
 
-    # Se ejecuta automáticamente al añadir el componente a la pantalla
     def did_mount(self):
         self.page.run_task(self.actualizar_reloj)
 
-    # Se ejecuta automáticamente al eliminar el componente de la pantalla
     def will_unmount(self):
         self.activo = False
 
     # Tarea asíncrona independiente para cada bombero
     async def actualizar_reloj(self):
+        ticks = 0
         while self.activo:
             ahora = datetime.now()
             
@@ -59,15 +58,23 @@ class BomberoActivo(ft.Container):
             minutos, segundos = divmod(int(tiempo_total.total_seconds()), 60)
             self.texto_cronometro.value = f"{minutos:02d}:{segundos:02d}"
 
-            # Lógica de la alarma (5 minutos = 300 segundos)
+            # Lógica de las alarmas
             tiempo_sin_revisar = ahora - self.ultima_revision
-            if tiempo_sin_revisar.total_seconds() >= 300: 
-                self.bgcolor = ft.colors.RED_900
+            segundos_sin_revisar = tiempo_sin_revisar.total_seconds()
+
+            if segundos_sin_revisar >= 600: 
+                # 10 minutos (600s): Parpadeo ROJO rápido (cambia cada 0.5s)
+                self.bgcolor = ft.colors.RED_900 if ticks % 2 == 0 else ft.colors.BLUE_GREY_900
+            elif segundos_sin_revisar >= 300:
+                # 5 minutos (300s): Parpadeo NARANJA normal (cambia cada 1s)
+                self.bgcolor = ft.colors.ORANGE_900 if ticks % 4 < 2 else ft.colors.BLUE_GREY_900
             else:
+                # Todo OK
                 self.bgcolor = ft.colors.BLUE_GREY_900
 
             self.update()
-            await asyncio.sleep(1)
+            ticks += 1
+            await asyncio.sleep(0.5)
 
     def actualizar_aire(self, e):
         if self.input_aire.value:
@@ -118,7 +125,7 @@ def main(page: ft.Page):
         crear_fila_disponible(bombero_activo.nombre)
         page.update()
 
-    # Panel izquierdo: Añadir y listar disponibles
+    # Panel izquierdo
     input_nombre = ft.TextField(label="Nombre del efectivo", expand=True, on_submit=agregar_bombero)
     btn_agregar = ft.ElevatedButton("Añadir", on_click=agregar_bombero, height=50)
 
@@ -135,10 +142,10 @@ def main(page: ft.Page):
         border_radius=10,
     )
 
-    # Panel derecho: Control de la intervención
+    # Panel derecho
     panel_derecho = ft.Container(
         content=ft.Column([
-            ft.Text("Intervención Activa (Control ERA)", size=20, weight="bold"),
+            ft.Text("Intervención Activa", size=20, weight="bold"),
             ft.Divider(),
             lista_activos
         ]),
