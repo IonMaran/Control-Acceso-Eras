@@ -47,29 +47,23 @@ class BomberoActivo(ft.Container):
     def will_unmount(self):
         self.activo = False
 
-    # Tarea asíncrona independiente para cada bombero
     async def actualizar_reloj(self):
         ticks = 0
         while self.activo:
             ahora = datetime.now()
             
-            # Cálculo del tiempo total
             tiempo_total = ahora - self.hora_entrada
             minutos, segundos = divmod(int(tiempo_total.total_seconds()), 60)
             self.texto_cronometro.value = f"{minutos:02d}:{segundos:02d}"
 
-            # Lógica de las alarmas
             tiempo_sin_revisar = ahora - self.ultima_revision
             segundos_sin_revisar = tiempo_sin_revisar.total_seconds()
 
             if segundos_sin_revisar >= 600: 
-                # 10 minutos (600s): Parpadeo ROJO rápido (cambia cada 0.5s)
                 self.bgcolor = ft.colors.RED_900 if ticks % 2 == 0 else ft.colors.BLUE_GREY_900
             elif segundos_sin_revisar >= 300:
-                # 5 minutos (300s): Parpadeo NARANJA normal (cambia cada 1s)
                 self.bgcolor = ft.colors.ORANGE_900 if ticks % 4 < 2 else ft.colors.BLUE_GREY_900
             else:
-                # Todo OK
                 self.bgcolor = ft.colors.BLUE_GREY_900
 
             self.update()
@@ -125,6 +119,15 @@ def main(page: ft.Page):
         crear_fila_disponible(bombero_activo.nombre)
         page.update()
 
+    def borrar_todo(e):
+        # Detenemos primero los cronómetros de todos los activos para no dejar procesos colgados
+        for bombero in lista_activos.controls:
+            bombero.activo = False
+        
+        lista_activos.controls.clear()
+        lista_disponibles.controls.clear()
+        page.update()
+
     # Panel izquierdo
     input_nombre = ft.TextField(label="Nombre del efectivo", expand=True, on_submit=agregar_bombero)
     btn_agregar = ft.ElevatedButton("Añadir", on_click=agregar_bombero, height=50)
@@ -155,7 +158,23 @@ def main(page: ft.Page):
         border_radius=10
     )
 
+    # Cabecera principal
+    btn_borrar_todo = ft.ElevatedButton(
+        "Borrar Todo", 
+        icon=ft.icons.DELETE, 
+        color=ft.colors.WHITE, 
+        bgcolor=ft.colors.BLUE_GREY_900,
+        on_click=borrar_todo
+    )
+    
+    cabecera = ft.Row([
+        ft.Text("Control de Accesos ERA", size=28, weight="bold"),
+        btn_borrar_todo
+    ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
+
+    # Añadir todo a la página
     page.add(
+        cabecera,
         ft.Row([panel_izquierdo, panel_derecho], expand=True, vertical_alignment=ft.CrossAxisAlignment.START)
     )
 
