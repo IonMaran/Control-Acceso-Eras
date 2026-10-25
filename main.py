@@ -59,9 +59,11 @@ class BomberoActivo(ft.Container):
             tiempo_sin_revisar = ahora - self.ultima_revision
             segundos_sin_revisar = tiempo_sin_revisar.total_seconds()
 
-            if segundos_sin_revisar >= 600: 
+            if segundos_sin_revisar >= 40: 
+                # 40 segundos para pruebas: Parpadeo ROJO rápido
                 self.bgcolor = ft.colors.RED_900 if ticks % 2 == 0 else ft.colors.BLUE_GREY_900
-            elif segundos_sin_revisar >= 300:
+            elif segundos_sin_revisar >= 20:
+                # 20 segundos para pruebas: Parpadeo NARANJA normal
                 self.bgcolor = ft.colors.ORANGE_900 if ticks % 4 < 2 else ft.colors.BLUE_GREY_900
             else:
                 self.bgcolor = ft.colors.BLUE_GREY_900
