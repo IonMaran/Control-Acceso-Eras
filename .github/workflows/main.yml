@@ -21,10 +21,10 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Instalar Flutter (Versión fijada)
+      - name: Instalar Flutter (Versión exacta para Flet 0.24.1)
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.22.3'
+          flutter-version: '3.24.3'
           channel: 'stable'
 
       - name: Aceptar licencias de Android
@@ -32,6 +32,12 @@ jobs:
 
       - name: Instalar Flet
         run: pip install flet==0.24.1
+
+      - name: Parchear plantilla de Flet para wakelock_plus
+        run: |
+          flutter pub cache add wakelock_plus -v 1.2.8
+          find ~/.pub-cache -name "build.gradle" -path "*wakelock_plus*" -exec sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdk 34/g' {} +
+          find ~/.pub-cache -name "build.gradle" -path "*wakelock_plus*" -exec sed -i 's/compileSdk flutter.compileSdkVersion/compileSdk 34/g' {} +
 
       - name: Compilar APK
         run: flet build apk --verbose
