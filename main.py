@@ -58,7 +58,7 @@ class BomberoActivo(ft.Container):
 
     async def actualizar_reloj(self):
         ticks = 0
-        color_naranja_suave = "#9C5C1E" # Naranja menos saturado
+        color_naranja_suave = "#9C5C1E"
         
         while self.activo:
             ahora = datetime.now()
@@ -70,11 +70,9 @@ class BomberoActivo(ft.Container):
             tiempo_sin_revisar = ahora - self.ultima_revision
             segundos_sin_revisar = tiempo_sin_revisar.total_seconds()
 
-            if segundos_sin_revisar >= 40: 
-                # 40 segundos para pruebas (ROJO)
+            if segundos_sin_revisar >= 600: # 10 min reales (cambiar a 40 para pruebas)
                 self.bgcolor = ft.colors.RED_900 if ticks % 2 == 0 else ft.colors.BLUE_GREY_900
-            elif segundos_sin_revisar >= 20:
-                # 20 segundos para pruebas (NARANJA SUAVE)
+            elif segundos_sin_revisar >= 300: # 5 min reales (cambiar a 20 para pruebas)
                 self.bgcolor = color_naranja_suave if ticks % 4 < 2 else ft.colors.BLUE_GREY_900
             else:
                 self.bgcolor = ft.colors.BLUE_GREY_900
@@ -91,7 +89,6 @@ class BomberoActivo(ft.Container):
 
     def salir(self, e):
         self.activo = False
-        # Calculamos los minutos de esta entrada y los sumamos a los que ya tuviera de antes
         minutos_sesion = (datetime.now() - self.hora_entrada).total_seconds() / 60
         minutos_totales = int(self.tiempo_acumulado + minutos_sesion)
         self.on_exit(self, minutos_totales)
@@ -107,7 +104,7 @@ def main(page: ft.Page):
 
     def agregar_bombero(e):
         if input_nombre.value:
-            crear_fila_disponible(input_nombre.value, 0) # Entra con 0 minutos acumulados
+            crear_fila_disponible(input_nombre.value, 0)
             input_nombre.value = ""
             input_nombre.focus()
             page.update()
@@ -119,8 +116,7 @@ def main(page: ft.Page):
             lista_activos.controls.append(nuevo_activo)
             page.update()
 
-        # Ocultamos el texto de minutos si está a 0
-        texto_minutos = ft.Text(f"{minutos_acumulados} min", color=ft.colors.WHITE54, size=14, italic=True)
+        texto_minutos = ft.Text(f"{minutos_acumulados} min", color=ft.colors.WHITE70, size=15, italic=True)
         if minutos_acumulados == 0:
             texto_minutos.visible = False
 
@@ -151,7 +147,7 @@ def main(page: ft.Page):
         lista_disponibles.controls.clear()
         page.update()
 
-    # Panel izquierdo
+    # Panel izquierdo (Ocupa 12 columnas en móviles, 4 en pantallas grandes)
     input_nombre = ft.TextField(label="Nombre del efectivo", expand=True, on_submit=agregar_bombero)
     btn_agregar = ft.ElevatedButton("Añadir", on_click=agregar_bombero, height=50)
 
@@ -161,24 +157,26 @@ def main(page: ft.Page):
             ft.Row([input_nombre, btn_agregar]),
             ft.Divider(),
             lista_disponibles
-        ]),
-        width=350,
+        ], expand=True),
         padding=20,
         border=ft.border.all(1, ft.colors.OUTLINE),
         border_radius=10,
+        col={"xs": 12, "lg": 4},
+        height=400 # Altura fija en móvil para que no colapse
     )
 
-    # Panel derecho
+    # Panel derecho (Ocupa 12 columnas en móviles, 8 en pantallas grandes)
     panel_derecho = ft.Container(
         content=ft.Column([
             ft.Text("Intervención Activa", size=20, weight="bold"),
             ft.Divider(),
             lista_activos
-        ]),
-        expand=True,
+        ], expand=True),
         padding=20,
         border=ft.border.all(1, ft.colors.OUTLINE),
-        border_radius=10
+        border_radius=10,
+        col={"xs": 12, "lg": 8},
+        height=500 # Altura fija en móvil para que se vea completo
     )
 
     # Cabecera principal
@@ -195,16 +193,18 @@ def main(page: ft.Page):
         btn_borrar_todo
     ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN)
 
+    # Diseño adaptable con ResponsiveRow
     page.add(
         cabecera,
-        ft.Row([panel_izquierdo, panel_derecho], expand=True, vertical_alignment=ft.CrossAxisAlignment.START)
+        ft.ResponsiveRow([
+            panel_izquierdo,
+            panel_derecho
+        ], expand=True)
     )
 
 if __name__ == "__main__":
     puerto = os.environ.get("PORT")
     if puerto:
-        # Modo Web (Render)
         ft.app(target=main, view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=int(puerto))
     else:
-        # Modo Nativo (APK Android / Escritorio)
         ft.app(target=main)
