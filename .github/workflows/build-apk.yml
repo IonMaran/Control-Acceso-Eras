@@ -21,10 +21,10 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Instalar Flutter (Compatible con wakelock 1.4.0 y AGP 8)
+      - name: Instalar Flutter (Versión exacta para Flet 0.24.1)
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.4'
+          flutter-version: '3.24.3'
           channel: 'stable'
 
       - name: Aceptar licencias de Android
@@ -33,9 +33,10 @@ jobs:
       - name: Instalar Flet
         run: pip install flet==0.24.1
 
-      - name: Parchear wakelock_plus 1.4.0 por seguridad
+      - name: Parchear wakelock_plus 1.4.0 para Flutter 3.24.3
         run: |
           flutter pub cache add wakelock_plus -v 1.4.0
+          find ~/.pub-cache -name "build.gradle" -path "*wakelock_plus*" -exec sed -i '/ndkVersion/d' {} +
           find ~/.pub-cache -name "build.gradle" -path "*wakelock_plus*" -exec sed -i 's/flutter.compileSdkVersion/34/g' {} +
           find ~/.pub-cache -name "build.gradle" -path "*wakelock_plus*" -exec sed -i 's/flutter.minSdkVersion/21/g' {} +
           find ~/.pub-cache -name "build.gradle" -path "*wakelock_plus*" -exec sed -i 's/flutter.targetSdkVersion/34/g' {} +
