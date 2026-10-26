@@ -33,16 +33,21 @@ jobs:
       - name: Instalar Flet
         run: pip install flet==0.24.1
 
-      - name: Parchear wakelock_plus 1.4.0 para Flutter 3.24.3
+      - name: Preparar plantilla compatible (Kotlin y dependencias)
         run: |
-          flutter pub cache add wakelock_plus -v 1.4.0
-          find ~/.pub-cache -name "build.gradle" -path "*wakelock_plus*" -exec sed -i '/ndkVersion/d' {} +
-          find ~/.pub-cache -name "build.gradle" -path "*wakelock_plus*" -exec sed -i 's/flutter.compileSdkVersion/34/g' {} +
-          find ~/.pub-cache -name "build.gradle" -path "*wakelock_plus*" -exec sed -i 's/flutter.minSdkVersion/21/g' {} +
-          find ~/.pub-cache -name "build.gradle" -path "*wakelock_plus*" -exec sed -i 's/flutter.targetSdkVersion/34/g' {} +
+          git clone --branch 0.24.1 https://github.com/flet-dev/flet-build-template.git /tmp/flet-template
+          cat << 'EOF' >> /tmp/flet-template/{{cookiecutter.out_dir}}/pubspec.yaml
+
+          dependency_overrides:
+            wakelock_plus: 1.2.5
+            package_info_plus: 8.0.2
+            sensors_plus: 6.0.1
+            share_plus: 10.0.2
+            connectivity_plus: 6.0.5
+          EOF
 
       - name: Compilar APK
-        run: flet build apk --verbose
+        run: flet build apk --template-dir /tmp/flet-template --verbose
 
       - name: Subir APK final
         uses: actions/upload-artifact@v4
