@@ -21,9 +21,10 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Instalar Flutter
+      - name: Instalar Flutter (Versión fijada)
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.24.3'
           channel: 'stable'
 
       - name: Aceptar licencias de Android
@@ -32,7 +33,7 @@ jobs:
       - name: Instalar Flet
         run: pip install flet==0.24.1
 
-      - name: Compilar APK (Modo detallado)
+      - name: Compilar APK
         run: flet build apk --verbose
 
       - name: Subir APK final
