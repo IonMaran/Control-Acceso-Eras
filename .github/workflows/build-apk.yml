@@ -33,17 +33,13 @@ jobs:
       - name: Instalar Flet
         run: pip install flet==0.24.1
 
-      - name: Preparar plantilla compatible (Kotlin y dependencias)
+      - name: Preparar plantilla compatible sin conflictos
         run: |
           git clone --branch 0.24.1 https://github.com/flet-dev/flet-build-template.git /tmp/flet-template
           cat << 'EOF' >> /tmp/flet-template/{{cookiecutter.out_dir}}/pubspec.yaml
 
           dependency_overrides:
-            wakelock_plus: 1.2.5
-            package_info_plus: 8.0.2
-            sensors_plus: 6.0.1
-            share_plus: 10.0.2
-            connectivity_plus: 6.0.5
+            wakelock_plus: 1.2.8
           EOF
 
       - name: Compilar APK
