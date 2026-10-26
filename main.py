@@ -201,5 +201,10 @@ def main(page: ft.Page):
     )
 
 if __name__ == "__main__":
-    puerto = int(os.environ.get("PORT", 8080))
-    ft.app(target=main, view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=puerto)
+    puerto = os.environ.get("PORT")
+    if puerto:
+        # Modo Web (Render)
+        ft.app(target=main, view=ft.AppView.WEB_BROWSER, host="0.0.0.0", port=int(puerto))
+    else:
+        # Modo Nativo (APK Android / Escritorio)
+        ft.app(target=main)
